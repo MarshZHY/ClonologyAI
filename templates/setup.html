@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Clone Setup - Create Your Personal AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="setup-header">
+            <div class="header-content">
+                <h1>Create Your AI Clone</h1>
+                <p>Transform your chat history into an intelligent AI that speaks just like you</p>
+            </div>
+            <nav class="breadcrumb-nav">
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    </svg>
+                    Home
+                </a>
+                <svg class="nav-separator" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span class="nav-current">Setup</span>
+            </nav>
+        </header>
+
+        <!-- Progress Steps -->
+        <div class="setup-progress">
+            <div class="progress-steps">
+                <div class="step-item active" data-step="1">
+                    <div class="step-circle">
+                        <svg class="step-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="step-label">Upload Data</div>
+                </div>
+                <div class="step-item" data-step="2">
+                    <div class="step-circle">
+                        <svg class="step-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="step-label">Select Participant</div>
+                </div>
+                <div class="step-item" data-step="3">
+                    <div class="step-circle">
+                        <svg class="step-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="step-label">Configure & Process</div>
+                </div>
+                <div class="step-item" data-step="4">
+                    <div class="step-circle">
+                        <svg class="step-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                    </div>
+                    <div class="step-label">Test & Chat</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Upload Form -->
+        <div class="setup-step" id="step-upload">
+            <div class="step-card">
+                <div class="step-header">
+                    <h2>Upload Your Chat History</h2>
+                    <p>Select your message.json file to begin the AI cloning process</p>
+                </div>
+                
+                <form id="upload-form" class="upload-form" enctype="multipart/form-data">
+                    <div class="upload-area">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </div>
+                        <div class="upload-content">
+                            <h3>Drag & drop your file here</h3>
+                            <p>or click to browse</p>
+                        </div>
+                        <input type="file" name="chatfile" accept=".json" required id="file-input" style="display: none;">
+                        <div class="upload-formats">
+                            <div class="format-tag">JSON</div>
+                            <div class="format-info">Max 50MB</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="step-button">
+                        <span>Analyze File</span>
+                        <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 2: Participant Selection -->
+        <div class="setup-step" id="step-participant" style="display:none;">
+            <div class="step-card">
+                <div class="step-header">
+                    <h2>Choose Your AI Clone Identity</h2>
+                    <p>Select which participant from your chat history you want to clone</p>
+                </div>
+                
+                <form id="participant-form" class="participant-form">
+                    <div class="participant-grid" id="participants"></div>
+                    
+                    <div class="model-config">
+                        <div class="config-section">
+                            <label class="config-label">
+                                <svg class="label-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clip-rule="evenodd" />
+                                </svg>
+                                AI Model Name
+                            </label>
+                            <input type="text" name="model_name" placeholder="e.g., MyPersonalClone" required class="config-input">
+                        </div>
+
+                        <div class="config-section">
+                            <label class="config-label">
+                                <svg class="label-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                </svg>
+                                Memory Processing
+                            </label>
+                            <div class="slider-container">
+                                <input type="range" id="chunk-size-slider" name="chunk_size" min="1" max="10" value="5" class="memory-slider">
+                                <div class="slider-track"></div>
+                                <div class="slider-labels">
+                                    <span>Precise</span>
+                                    <span class="slider-value" id="chunk-size-value">5</span>
+                                    <span>Fast</span>
+                                </div>
+                            </div>
+                            <div class="memory-info">
+                                <div class="info-item active" data-range="1-3">
+                                    <div class="info-dot"></div>
+                                    <div class="info-text">
+                                        <strong>Precise Mode:</strong> Detailed analysis with smaller chunks for nuanced understanding
+                                    </div>
+                                </div>
+                                <div class="info-item" data-range="4-7">
+                                    <div class="info-dot"></div>
+                                    <div class="info-text">
+                                        <strong>Balanced Mode:</strong> Optimal balance between speed and accuracy
+                                    </div>
+                                </div>
+                                <div class="info-item" data-range="8-10">
+                                    <div class="info-dot"></div>
+                                    <div class="info-text">
+                                        <strong>Fast Mode:</strong> Quick processing with larger chunks for rapid deployment
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="step-button primary">
+                        <span>Create AI Clone</span>
+                        <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 3: Processing -->
+        <div class="setup-step" id="step-processing" style="display:none;">
+            <div class="step-card processing-card">
+                <div class="processing-header">
+                    <div class="processing-icon">
+                        <div class="spinner"></div>
+                    </div>
+                    <h2>Creating Your AI Clone</h2>
+                    <p id="status-message">Initializing the cloning process...</p>
+                </div>
+                
+                <div class="processing-progress">
+                    <div class="progress-ring">
+                        <svg class="progress-svg" viewBox="0 0 120 120">
+                            <circle class="progress-background" cx="60" cy="60" r="50"/>
+                            <circle class="progress-foreground" cx="60" cy="60" r="50" id="progress-circle"/>
+                        </svg>
+                        <div class="progress-text" id="progress-percentage">0%</div>
+                    </div>
+                    
+                    <div class="processing-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Step:</span>
+                            <span class="detail-value" id="current-step">Preparing</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Progress:</span>
+                            <span class="detail-value">
+                                <span id="chunks-processed">0</span> / <span id="total-chunks">0</span> chunks
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Batches:</span>
+                            <span class="detail-value">
+                                <span id="batches-processed">0</span> / <span id="total-batches">0</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="continue-to-chat" class="step-button success" style="display:none;">
+                    <span>Test Your Clone</span>
+                    <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Chat Testing -->
+        <div class="setup-step" id="step-chat" style="display:none;">
+            <div class="step-card chat-card">
+                <div class="chat-header">
+                    <h2>Test Your AI Clone</h2>
+                    <p>Your AI clone is ready! Try having a conversation to see how well it mimics your style.</p>
+                </div>
+                
+                <div class="chat-container">
+                    <div id="chat-box" class="chat-messages">
+                        <div class="welcome-message">
+                            <div class="ai-avatar">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your AI clone. I've learned from your chat history and I'm ready to chat just like you would. Try asking me something!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="chat-form" class="chat-input-form">
+                        <div class="chat-input-container">
+                            <input type="text" id="user-message" placeholder="Type your message..." required autocomplete="off">
+                            <button type="submit" class="send-button">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="completion-actions">
+                    <a href="{{ url_for('direct_chat') }}" class="step-button">
+                        <span>Continue Chatting</span>
+                        <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                    </a>
+                    <a href="{{ url_for('index') }}" class="step-button secondary">
+                        <span>Evaluate Performance</span>
+                        <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

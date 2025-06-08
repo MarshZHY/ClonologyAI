@@ -1,0 +1,515 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // Common variables
+    let selectedModel = '';
+    
+    // Fetch available models if on Evaluation page
+    const modelSelect = document.getElementById('model-select');
+    if (modelSelect) {
+        fetchAvailableModels();
+    }
+    
+    async function fetchAvailableModels() {
+        try {
+            const response = await fetch('/api/models');
+            if (!response.ok) {
+                throw new Error('Failed to fetch models');
+            }
+            const data = await response.json();
+            modelSelect.innerHTML = '';
+            
+            if (data.models.length === 0) {
+                modelSelect.innerHTML = '<option value="">No models available. Please create one first.</option>';
+            } else {
+                data.models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+                selectedModel = data.models[0];
+            }
+        } catch (error) {
+            console.error('Error fetching models:', error);
+            modelSelect.innerHTML = '<option value="">Error loading models</option>';
+        }
+    }
+    
+    // Model selection change handler
+    if (modelSelect) {
+        modelSelect.addEventListener('change', function() {
+            selectedModel = this.value;
+        });
+    }
+    
+    // Setup page logic for upload/select/chat
+    if (document.getElementById('upload-form')) {
+        const uploadForm = document.getElementById('upload-form');
+        const participantSelect = document.getElementById('participant-select');
+        const participantsDiv = document.getElementById('participants');
+        const participantForm = document.getElementById('participant-form');
+        const chatSection = document.getElementById('chat-section');
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const userMessage = document.getElementById('user-message');
+        const processingSection = document.getElementById('processing-section');
+        const progressBar = document.getElementById('progress-bar');
+        const statusMessage = document.getElementById('status-message');
+        const currentStep = document.getElementById('current-step');
+        const totalSteps = document.getElementById('total-steps');
+        const chunksProcessed = document.getElementById('chunks-processed');
+        const totalChunks = document.getElementById('total-chunks');
+        const batchesProcessed = document.getElementById('batches-processed');
+        const totalBatches = document.getElementById('total-batches');
+        const continueToChat = document.getElementById('continue-to-chat');
+
+        let aiParticipant = null;
+        let modelName = null;
+        let processingInterval = null;
+
+        // File upload form submission
+        uploadForm.onsubmit = async function(e) {
+            e.preventDefault();
+            try {
+                console.log('Form submission started');
+                const formData = new FormData(uploadForm);
+                console.log('Uploading file...');
+                
+                // Show uploading message
+                const uploadStatus = document.createElement('p');
+                uploadStatus.id = 'upload-status';
+                uploadStatus.textContent = 'Uploading file...';
+                uploadForm.appendChild(uploadStatus);
+                
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                console.log('Response received:', res.status);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('Upload error:', res.status, errorText);
+                    uploadStatus.textContent = `Error: ${res.status} - ${errorText || 'Unknown error'}`;
+                    uploadStatus.style.color = 'red';
+                    return;
+                }
+                
+                const data = await res.json();
+                console.log('Data received:', data);
+                
+                // Remove the status message
+                const existingStatus = document.getElementById('upload-status');
+                if (existingStatus) uploadForm.removeChild(existingStatus);
+                
+                if (data.participants && data.participants.length > 0) {
+                    participantSelect.style.display = '';
+                    participantsDiv.innerHTML = '';
+                    data.participants.forEach((p, idx) => {
+                        // Ensure p is a string or get a string representation if it's an object
+                        const participantName = typeof p === 'string' ? p : 
+                                               (p.name || JSON.stringify(p));
+                        participantsDiv.innerHTML += `<label><input type="radio" name="participant" value="${participantName}" ${idx===0?'checked':''}> ${participantName}</label><br>`;
+                    });
+                } else {
+                    console.error('No participants found in data:', data);
+                    const uploadStatus = document.createElement('p');
+                    uploadStatus.id = 'upload-status';
+                    uploadStatus.textContent = 'Error: No participants found in the uploaded file.';
+                    uploadStatus.style.color = 'red';
+                    uploadForm.appendChild(uploadStatus);
+                }
+            } catch (error) {
+                console.error('Error during upload:', error);
+                const uploadStatus = document.getElementById('upload-status') || document.createElement('p');
+                uploadStatus.id = 'upload-status';
+                uploadStatus.textContent = `Error: ${error.message || 'Unknown error'}`;
+                uploadStatus.style.color = 'red';
+                if (!uploadStatus.parentNode) uploadForm.appendChild(uploadStatus);
+            }
+        };
+        
+        // Participant selection form submission
+        participantForm.onsubmit = async function(e) {
+            e.preventDefault();
+            
+            // Check that a participant is selected
+            const selectedParticipant = participantForm.querySelector('input[name="participant"]:checked');
+            if (!selectedParticipant) {
+                alert('Please select a participant to clone');
+                return;
+            }
+            
+            aiParticipant = selectedParticipant.value;
+            modelName = participantForm.model_name.value;
+            
+            if (!modelName || !aiParticipant) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                // Hide participant selection and show processing section
+                participantSelect.style.display = 'none';
+                processingSection.style.display = '';
+                
+                // Step 1: Initialize basic model structure
+                statusMessage.textContent = "Initializing your AI clone...";
+                const initRes = await fetch('/select_participant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ participant: aiParticipant, model_name: modelName })
+                });
+                
+                if (!initRes.ok) {
+                    const errorText = await initRes.text();
+                    throw new Error(`Failed to initialize model: ${errorText}`);
+                }
+                
+                const initData = await initRes.json();
+                console.log("Model initialization successful:", initData);
+                
+                // Step 2: Start the processing
+                statusMessage.textContent = "Starting processing...";
+                const processRes = await fetch('/api/process_model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_name: modelName, participant: aiParticipant })
+                });
+                
+                if (!processRes.ok) {
+                    const errorText = await processRes.text();
+                    throw new Error(`Failed to start processing: ${errorText}`);
+                }
+                
+                const processData = await processRes.json();
+                console.log("Process started:", processData);
+                
+                // Start polling for updates
+                startProcessingUpdates(modelName);
+                
+            } catch (error) {
+                console.error('Error during participant selection:', error);
+                statusMessage.textContent = `Error: ${error.message || 'Unknown error'}`;
+                statusMessage.style.color = 'red';
+            }
+        };
+        
+        // Function to poll for processing updates
+        function startProcessingUpdates(model) {
+            // Clear any existing intervals
+            if (processingInterval) clearInterval(processingInterval);
+            
+            // Setup polling with a reasonable frequency
+            const pollFrequency = 1000; // 1 second
+            
+            processingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/process_status?model_name=${model}`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to get status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log("Process status update:", data);
+                    
+                    // Update the UI with the current progress
+                    updateProgressDisplay(data);
+                    
+                    // Check if processing is complete
+                    if (data.status === 'completed') {
+                        console.log("Process completed successfully");
+                        clearInterval(processingInterval);
+                        statusMessage.textContent = "AI Clone created successfully!";
+                        statusMessage.style.color = 'green';
+                        continueToChat.style.display = '';
+                    } else if (data.status === 'error') {
+                        console.error("Process error:", data.error);
+                        clearInterval(processingInterval);
+                        statusMessage.textContent = `Error: ${data.error || 'Unknown error'}`;
+                        statusMessage.style.color = 'red';
+                    }
+                } catch (error) {
+                    console.error('Error checking processing status:', error);
+                }
+            }, pollFrequency);
+        }
+        
+        // Function to update the progress display
+        function updateProgressDisplay(data) {
+            if (!data || !data.progress) return;
+            
+            const progress = data.progress;
+            
+            // Calculate progress percentage based on the current step
+            let progressPercent = 0;
+            
+            if (progress.step === 1) { // Chunking step
+                // If we know total chunks, use that for progress
+                if (progress.total_chunks > 0) {
+                    progressPercent = Math.round((progress.chunks_processed / progress.total_chunks) * 25);
+                } else {
+                    progressPercent = 10; // Default if we don't know total
+                }
+            } else if (progress.step === 2) { // Summarizing step
+                // Base at 25% (after chunking) + batch progress
+                const batchProgress = progress.total_batches > 0 ? 
+                    (progress.batches_processed / progress.total_batches) * 50 : 0.25;
+                progressPercent = 25 + Math.round(batchProgress);
+            } else if (progress.step === 3) { // Indexing step
+                progressPercent = 75; // Fixed value for indexing
+            } else if (progress.step === 4 || progress.status === 'complete') { // Completed
+                progressPercent = 100;
+            }
+            
+            // Ensure progress is between 0-100%
+            progressPercent = Math.max(0, Math.min(100, progressPercent));
+            
+            // Update progress bar
+            progressBar.style.width = `${progressPercent}%`;
+            
+            // Update status message with more detail
+            statusMessage.textContent = progress.message || "Processing...";
+            
+            // Make the current step name more user-friendly
+            let stepName = progress.current_step || "";
+            if (stepName === "chunking") stepName = "Preparing message chunks";
+            else if (stepName === "summarizing") stepName = "Creating memory summaries";
+            else if (stepName === "indexing") stepName = "Building search index";
+            else if (stepName === "complete") stepName = "Process complete";
+            
+            // Update step information
+            currentStep.textContent = stepName;
+            totalSteps.textContent = progress.total_steps || "4";
+            
+            // Update chunk information
+            chunksProcessed.textContent = progress.chunks_processed || "0";
+            totalChunks.textContent = progress.total_chunks || "0";
+            
+            // Update batch information
+            batchesProcessed.textContent = progress.batches_processed || "0";
+            totalBatches.textContent = progress.total_batches || "0";
+        }
+        
+        // Continue to chat button handler
+        continueToChat.addEventListener('click', function() {
+            processingSection.style.display = 'none';
+            chatSection.style.display = '';
+        });
+        
+        // Chat form submission
+        chatForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const msg = userMessage.value;
+            if (!msg.trim()) return; // Don't submit empty messages
+            
+            chatBox.innerHTML += `<div><b>You:</b> ${msg}</div>`;
+            userMessage.value = '';
+            
+            // Show loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.innerHTML = '<b>AI:</b> <em>Thinking...</em>';
+            chatBox.appendChild(loadingDiv);
+            
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, model: modelName })
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`API error: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                
+                // Replace loading indicator with response
+                chatBox.removeChild(loadingDiv);
+                chatBox.innerHTML += `<div><b>${modelName}:</b> ${data.langchain}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                // After creating a model, add it to the models list
+                updateModelsList(modelName);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                // Replace loading indicator with error
+                chatBox.removeChild(loadingDiv);
+                chatBox.innerHTML += `<div class="error"><b>Error:</b> ${error.message}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        };
+        
+        // Function to update models list after creating a new model
+        async function updateModelsList(newModel) {
+            try {
+                // Fetch current models
+                const response = await fetch('/api/models');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch models');
+                }
+                const data = await response.json();
+                
+                // Check if model already exists
+                if (!data.models.includes(newModel)) {
+                    // Add the model to the list
+                    const models = [...data.models, newModel];
+                    
+                    // Update the list on the server
+                    await fetch('/api/update_models', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ models })
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating models list:', error);
+            }
+        }
+    }
+    
+    // Evaluation page logic
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatHistory = document.getElementById('chat-history');
+    const baselineResponse = document.getElementById('baseline-response');
+    const langchainResponse = document.getElementById('langchain-response');
+    const comparisonContainer = document.getElementById('comparison-container');
+    const voteButtons = document.querySelectorAll('.vote-btn');
+    
+    let currentMessage = '';
+    
+    // Function to add a message to the chat history
+    function addMessage(content, type) {
+        if (!chatHistory) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', `${type}-message`);
+        messageDiv.textContent = content;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+    
+    // Function to send user message to the backend
+    async function sendMessage(message) {
+        try {
+            // Display user message in chat
+            addMessage(message, 'user');
+            
+            // Store current message for evaluation
+            currentMessage = message;
+            
+            // Clear input field
+            if (userInput) userInput.value = '';
+            
+            // Show loading indicator
+            addMessage('Thinking...', 'ai');
+            
+            // Send request to backend with selected model
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message,
+                    model: selectedModel 
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Remove loading indicator
+            if (chatHistory && chatHistory.lastChild) {
+                chatHistory.removeChild(chatHistory.lastChild);
+            }
+            
+            // Display generic response in chat history
+            addMessage('I have two responses for you to evaluate. Please select which one is better.', 'ai');
+            
+            // Show comparison container
+            if (comparisonContainer) {
+                comparisonContainer.style.display = 'block';
+            }
+            
+            // Update response areas
+            if (baselineResponse) baselineResponse.textContent = data.baseline;
+            if (langchainResponse) langchainResponse.textContent = data.langchain;
+            
+            // Scroll to comparison section
+            if (comparisonContainer) {
+                comparisonContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            // Remove loading indicator if it exists
+            if (chatHistory && chatHistory.lastChild) {
+                chatHistory.removeChild(chatHistory.lastChild);
+            }
+            addMessage(`Sorry, there was an error: ${error.message}`, 'ai');
+        }
+    }
+    
+    // Event listener for send button
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function() {
+            if (userInput) {
+                const message = userInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                }
+            }
+        });
+    }
+    
+    // Event listener for enter key
+    if (userInput) {
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const message = userInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                }
+            }
+        });
+    }
+    
+    // Event listeners for vote buttons
+    if (voteButtons) {
+        voteButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const winner = this.getAttribute('data-model');
+                try {
+                    // Send evaluation to backend
+                    await fetch('/api/evaluate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            winner, 
+                            message: currentMessage 
+                        })
+                    });
+                    
+                    // Hide comparison, show confirmation
+                    if (comparisonContainer) {
+                        comparisonContainer.style.display = 'none';
+                    }
+                    
+                    // Show thank you message
+                    addMessage('Thank you for your feedback! What else would you like to discuss?', 'ai');
+                    
+                    // Reset current message
+                    currentMessage = '';
+                    
+                } catch (error) {
+                    console.error('Error submitting vote:', error);
+                    addMessage('Sorry, there was an error submitting your vote.', 'ai');
+                }
+            });
+        });
+    }
+    
+    // Focus on input field when page loads
+    if (userInput) {
+        userInput.focus();
+    }
+});

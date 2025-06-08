@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Clone Evaluation - Human Performance Testing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="evaluation-header">
+            <div class="header-content">
+                <div class="header-badge">
+                    <svg class="badge-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Performance Evaluation</span>
+                </div>
+                <h1>AI Clone vs Baseline Comparison</h1>
+                <p>Compare your AI clone's performance against baseline models with comprehensive human evaluation</p>
+            </div>
+            <nav class="breadcrumb-nav">
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    </svg>
+                    Home
+                </a>
+                <svg class="nav-separator" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+                <a href="{{ url_for('setup') }}" class="nav-link">Setup</a>
+                <svg class="nav-separator" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span class="nav-current">Evaluation</span>
+            </nav>
+        </header>
+
+        <!-- Enhanced Control Panel -->
+        <div class="control-panel">
+            <div class="control-group">
+                <div class="control-item">
+                    <label class="control-label">
+                        <svg class="label-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Select AI Clone
+                    </label>
+                    <select id="model-select" class="control-select">
+                        <option value="">Loading models...</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label class="control-label">
+                        <svg class="label-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                        </svg>
+                        Evaluation Type
+                    </label>
+                    <select id="eval-type-select" class="control-select">
+                        <option value="natural_chat">💬 Natural Chat</option>
+                        <option value="memory_recall">🧠 Memory Recall</option>
+                        <option value="personalization">👤 Personalization</option>
+                        <option value="emotional_support">❤️ Emotional Support</option>
+                    </select>
+                </div>
+                
+                <div class="control-actions">
+                    <button id="export-results" class="action-button">
+                        <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Export Results
+                    </button>
+                    <button id="reset-session" class="action-button secondary">
+                        <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        Reset Session
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Analytics Dashboard -->
+        <div class="analytics-dashboard">
+            <div class="dashboard-header">
+                <h3>
+                    <svg class="section-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                    </svg>
+                    Performance Analytics
+                </h3>
+                <div class="dashboard-controls">
+                    <div class="time-filter">
+                        <select id="time-filter" class="filter-select">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    <div class="dashboard-status">
+                        <div class="status-indicator">
+                            <div class="status-dot active" id="evaluation-status"></div>
+                            <span id="status-text">Ready for evaluation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metrics-overview">
+                <div class="metric-card highlight-card">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-label">Total Evaluations</div>
+                            <div class="metric-sublabel">Current session</div>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="total-evals">0</div>
+                    <div class="metric-trend">
+                        <div class="trend-indicator positive">
+                            <svg class="trend-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Active session</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card performance-summary">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-label">AI Clone Performance</div>
+                            <div class="metric-sublabel">Win rate vs baseline</div>
+                        </div>
+                    </div>
+                    <div class="performance-chart" id="performance-chart">
+                        <div class="chart-bar baseline">
+                            <div class="bar-fill" data-percentage="0" id="baseline-bar"></div>
+                            <div class="bar-label">Baseline</div>
+                        </div>
+                        <div class="chart-bar clone">
+                            <div class="bar-fill" data-percentage="0" id="clone-bar"></div>
+                            <div class="bar-label">AI Clone</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card evaluation-types">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                            </div>
+                        <div class="metric-info">
+                            <div class="metric-label">Evaluation Types</div>
+                            <div class="metric-sublabel">Distribution breakdown</div>
+                        </div>
+                    </div>
+                    <div class="type-breakdown" id="type-breakdown">
+                        <div class="type-item">
+                            <span class="type-name">💬 Natural Chat</span>
+                            <span class="type-count">0</span>
+                        </div>
+                        <div class="type-item">
+                            <span class="type-name">🧠 Memory Recall</span>
+                            <span class="type-count">0</span>
+                        </div>
+                        <div class="type-item">
+                            <span class="type-name">👤 Personalization</span>
+                            <span class="type-count">0</span>
+                        </div>
+                        <div class="type-item">
+                            <span class="type-name">❤️ Emotional Support</span>
+                            <span class="type-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Evaluation Chat -->
+        <div class="evaluation-chat-section">
+            <div class="eval-chat-header">
+                <div class="chat-title-section">
+                    <svg class="chat-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                    </svg>
+                    <div class="title-content">
+                        <h3>Evaluation Chat</h3>
+                        <p>Ask questions to compare AI responses</p>
+                    </div>
+                </div>
+                <div class="chat-status-indicator">
+                    <div class="status-dot ready"></div>
+                    <span>Ready for evaluation</span>
+                </div>
+            </div>
+            
+            <div class="chat-container-eval">
+                <div id="chat-history" class="chat-messages-eval">
+                    <div class="eval-welcome-message">
+                        <div class="welcome-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="welcome-content">
+                            <h4>Start Evaluation</h4>
+                            <p>Ask a question below and you'll receive responses from both the baseline model and your AI clone. Then choose which response is better!</p>
+                            <div class="welcome-tips">
+                                <div class="tip-item">
+                                    <span class="tip-emoji">💡</span>
+                                    <span>Try personal questions to test memory</span>
+                                </div>
+                                <div class="tip-item">
+                                    <span class="tip-emoji">🎯</span>
+                                    <span>Ask about your interests and preferences</span>
+                                </div>
+                                <div class="tip-item">
+                                    <span class="tip-emoji">🗣️</span>
+                                    <span>Test conversational style matching</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="eval-input-area">
+                    <div class="input-suggestions-eval">
+                        <div class="suggestions-header">
+                            <span>Quick Start Ideas:</span>
+                        </div>
+                        <div class="suggestion-chips-eval">
+                            <button class="suggestion-chip" data-question="What are my favorite hobbies?">What are my favorite hobbies?</button>
+                            <button class="suggestion-chip" data-question="How do I usually respond when stressed?">How do I respond to stress?</button>
+                            <button class="suggestion-chip" data-question="What's my communication style like?">What's my communication style?</button>
+                            <button class="suggestion-chip" data-question="Tell me about my recent conversations">Tell me about my recent conversations</button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-container-eval">
+                        <div class="input-wrapper-eval">
+                            <input type="text" id="user-input" placeholder="Ask a question to compare responses..." autocomplete="off">
+                            <div class="input-counter">
+                                <span id="char-count">0</span>/500
+                            </div>
+                        </div>
+                        <button id="send-btn" class="send-button-eval">
+                            <svg class="send-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                            </svg>
+                            <span class="send-text">Send Question</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Comparison Interface -->
+        <div class="comparison-interface" id="comparison-container" style="display: none;">
+            <div class="comparison-header">
+                <div class="comparison-progress">
+                    <div class="progress-step active">
+                        <span class="step-number">1</span>
+                        <span class="step-label">Question Asked</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step active">
+                        <span class="step-number">2</span>
+                        <span class="step-label">Responses Generated</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step">
+                        <span class="step-number">3</span>
+                        <span class="step-label">Your Evaluation</span>
+                    </div>
+                </div>
+                
+                <div class="comparison-title">
+                    <h3>Which response is better?</h3>
+                    <p>Compare the responses below and select the one that better matches your expected behavior</p>
+                </div>
+            </div>
+            
+            <div class="user-question-display">
+                <div class="question-bubble">
+                    <div class="question-icon">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="question-content">
+                        <span class="question-label">Your Question:</span>
+                        <p id="current-question"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="response-panel baseline-panel">
+                    <div class="panel-header">
+                        <div class="panel-badge neutral">
+                            <svg class="badge-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Response A</span>
+                        </div>
+                        <div class="panel-meta">
+                            <span class="panel-label">AI Response Option</span>
+                            <div class="response-stats">
+                                <span class="stat-item">
+                                    <svg class="stat-icon" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span id="baseline-time">0.0s</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="response-content" id="baseline-response">
+                        <div class="response-loading">
+                            <div class="loading-spinner"></div>
+                            <span>Generating response A...</span>
+                        </div>
+                    </div>
+                    <button class="vote-button option-a-vote" data-model="baseline" disabled>
+                        <svg class="vote-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Choose Response A</span>
+                    </button>
+                </div>
+                
+                <div class="comparison-divider">
+                    <div class="divider-content">
+                        <div class="divider-line"></div>
+                        <div class="divider-text">VS</div>
+                        <div class="divider-line"></div>
+                    </div>
+                    <div class="divider-helper">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Compare & Choose</span>
+                    </div>
+                </div>
+                
+                <div class="response-panel clone-panel">
+                    <div class="panel-header">
+                        <div class="panel-badge neutral">
+                            <svg class="badge-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Response B</span>
+                        </div>
+                        <div class="panel-meta">
+                            <span class="panel-label">AI Response Option</span>
+                            <div class="response-stats">
+                                <span class="stat-item">
+                                    <svg class="stat-icon" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span id="clone-time">0.0s</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="response-content" id="langchain-response">
+                        <div class="response-loading">
+                            <div class="loading-spinner"></div>
+                            <span>Generating response B...</span>
+                        </div>
+                    </div>
+                    <button class="vote-button option-b-vote" data-model="langchain" disabled>
+                        <svg class="vote-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Choose Response B</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="evaluation-actions">
+                <button id="skip-evaluation" class="action-button secondary">
+                    <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Skip This Evaluation
+                </button>
+                <button id="restart-evaluation" class="action-button">
+                    <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                    Ask Another Question
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
