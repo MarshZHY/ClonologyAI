@@ -25,7 +25,6 @@ ClonologyAI is an advanced AI platform that creates personalized AI models from 
 
 - 🧠 **Memory-Aware Conversations** - Your AI clone remembers past interactions and context
 - 🎭 **Personality Cloning** - Captures your unique communication style and mannerisms  
-- ⚡ **Real-time Processing** - Instant responses with natural conversation flow
 - 📊 **Human Evaluation** - Compare AI clone performance against baseline models
 - 🔧 **Customizable Processing** - Adjustable memory precision and processing speed
 
